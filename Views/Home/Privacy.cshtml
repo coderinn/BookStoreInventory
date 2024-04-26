@@ -1,0 +1,114 @@
+﻿@{
+    ViewBag.Title = "Import Data";
+    ViewBag.pTitle = "Import Data";
+    ViewBag.pageTitle = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div id="global-loader">
+    <div class="whirly-loader"> </div>
+</div>
+<div class="row">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-start">
+                <h5 class="card-title me-2">Import Data From Excel</h5>
+                <div class="ms-auto">
+                </div>
+
+            </div>
+
+
+
+            <hr class="mb-4">
+            <form method="post" enctype="multipart/form-data">
+                <div class="input-group">
+                    <input type="file" class="form-control" id="file" name="file" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+                    <button type="button" class="btn btn-primary" onclick="uploadFile()">Import Data From Excel</button>
+                </div>
+            </form>
+
+            <div id="progress"></div>
+
+
+
+            <div id="divInfo" class="alert alert-success">
+            </div>
+
+            <button type="button" class="btn btn-danger" onclick="testDB()">Test Database</button>
+
+
+
+
+
+        </div>
+    </div>
+</div>
+<!-- end row -->
+<!-- end row -->
+@section Scripts {
+    <script>
+
+        function uploadFile() {
+            var formData = new FormData();
+            var fileInput = document.getElementById('file');
+            formData.append('file', fileInput.files[0]);
+
+            $.ajax({
+                url: '@Url.Action("Upload", "Dashboard")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function () {
+
+                    document.getElementById("divInfo").innerText = 'Excel file imported successfully!';
+                    // Handle success, e.g., show success message
+                    // alert('File uploaded successfully!');
+                },
+                error: function () {
+                    // Handle error
+                    alert('An error occurred while uploading the file.');
+                }
+            });
+
+            // Polling to get progress
+            var interval = setInterval(function () {
+                $.get('@Url.Action("GetProgress", "Dashboard")', function (result) {
+                    // Update progress UI
+
+
+                    document.getElementById("progress").innerText = result.progressMessage;
+
+
+                    // Check if progress is 100%, if so, stop polling
+                    if (result.Progress === 100) {
+                        clearInterval(interval);
+                    }
+                });
+            }, 100); // Poll every 1 second
+        }
+
+        function testDB() {
+
+
+            $.ajax({
+                url: '@Url.Action("TestDatabase", "Dashboard")',
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                success: function (msg) {
+                    debugger;
+                    document.getElementById("divInfo").innerText = msg.message;
+                    // Handle success, e.g., show success message
+                    // alert('File uploaded successfully!');
+                },
+                error: function () {
+                    // Handle error
+                    alert('An error occurred while uploading the file.');
+                }
+            });
+
+
+        }
+    </script>
+}
